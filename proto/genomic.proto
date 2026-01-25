@@ -1,0 +1,72 @@
+syntax = "proto3";
+
+package genomic;
+
+// Genomic analysis RPC service (middleware API)
+service GenomicService {
+  // Submit sequence alignment (e.g. Smith-Waterman) job
+  rpc SequenceAlignment(AlignmentRequest) returns (AlignmentResponse);
+  // Submit pattern search (e.g. KMP) job
+  rpc PatternSearch(PatternSearchRequest) returns (PatternSearchResponse);
+  // Submit k-mer counting job
+  rpc KmerCount(KmerCountRequest) returns (KmerCountResponse);
+  // Batch: submit multiple sequences for alignment
+  rpc BatchAlignment(BatchAlignmentRequest) returns (BatchAlignmentResponse);
+  // Health check / worker status
+  rpc HealthCheck(HealthRequest) returns (HealthResponse);
+}
+
+message AlignmentRequest {
+  string sequence_a = 1;
+  string sequence_b = 2;
+  int32 match_score = 3;
+  int32 mismatch_penalty = 4;
+  int32 gap_penalty = 5;
+}
+
+message AlignmentResponse {
+  string aligned_a = 1;
+  string aligned_b = 2;
+  int32 score = 3;
+  bool cache_hit = 4;
+}
+
+message PatternSearchRequest {
+  string text = 1;       // genomic sequence
+  string pattern = 2;
+}
+
+message PatternSearchResponse {
+  repeated int32 positions = 1;  // 0-based indices
+  int32 count = 2;
+  bool cache_hit = 3;
+}
+
+message KmerCountRequest {
+  string sequence = 1;
+  int32 k = 2;
+}
+
+message KmerCountResponse {
+  map<string, int64> counts = 1;
+  bool cache_hit = 2;
+}
+
+message BatchAlignmentRequest {
+  repeated string sequences = 1;  // pairs: [a1,b1, a2,b2, ...] or single ref + many
+  string reference = 2;           // if set, align each in sequences against reference
+  int32 match_score = 3;
+  int32 mismatch_penalty = 4;
+  int32 gap_penalty = 5;
+}
+
+message BatchAlignmentResponse {
+  repeated AlignmentResponse results = 1;
+}
+
+message HealthRequest {}
+
+message HealthResponse {
+  int32 worker_count = 1;
+  bool ok = 2;
+}
