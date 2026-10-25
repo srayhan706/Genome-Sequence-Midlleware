@@ -5,7 +5,7 @@ import warnings
 
 import genomic_pb2 as genomic__pb2
 
-GRPC_GENERATED_VERSION = '1.76.0'
+GRPC_GENERATED_VERSION = '1.84.1'
 GRPC_VERSION = grpc.__version__
 _version_not_supported = False
 
@@ -25,7 +25,7 @@ if _version_not_supported:
     )
 
 
-class GenomicServiceStub(object):
+class GenomicServiceStub:
     """Genomic analysis RPC service (middleware API)
     """
 
@@ -60,9 +60,14 @@ class GenomicServiceStub(object):
                 request_serializer=genomic__pb2.HealthRequest.SerializeToString,
                 response_deserializer=genomic__pb2.HealthResponse.FromString,
                 _registered_method=True)
+        self.GetStats = channel.unary_unary(
+                '/genomic.GenomicService/GetStats',
+                request_serializer=genomic__pb2.StatsRequest.SerializeToString,
+                response_deserializer=genomic__pb2.StatsResponse.FromString,
+                _registered_method=True)
 
 
-class GenomicServiceServicer(object):
+class GenomicServiceServicer:
     """Genomic analysis RPC service (middleware API)
     """
 
@@ -101,6 +106,13 @@ class GenomicServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def GetStats(self, request, context):
+        """Live cluster statistics (per-worker load, cache, traffic)
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_GenomicServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -129,6 +141,11 @@ def add_GenomicServiceServicer_to_server(servicer, server):
                     request_deserializer=genomic__pb2.HealthRequest.FromString,
                     response_serializer=genomic__pb2.HealthResponse.SerializeToString,
             ),
+            'GetStats': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetStats,
+                    request_deserializer=genomic__pb2.StatsRequest.FromString,
+                    response_serializer=genomic__pb2.StatsResponse.SerializeToString,
+            ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
             'genomic.GenomicService', rpc_method_handlers)
@@ -137,7 +154,7 @@ def add_GenomicServiceServicer_to_server(servicer, server):
 
 
  # This class is part of an EXPERIMENTAL API.
-class GenomicService(object):
+class GenomicService:
     """Genomic analysis RPC service (middleware API)
     """
 
@@ -266,6 +283,33 @@ class GenomicService(object):
             '/genomic.GenomicService/HealthCheck',
             genomic__pb2.HealthRequest.SerializeToString,
             genomic__pb2.HealthResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def GetStats(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/genomic.GenomicService/GetStats',
+            genomic__pb2.StatsRequest.SerializeToString,
+            genomic__pb2.StatsResponse.FromString,
             options,
             channel_credentials,
             insecure,

@@ -1,6 +1,0 @@
-/Users/mdsharifulislamrayhan/Test/genomic-middleware/build/CMakeFiles/edit_cache.dir
-/Users/mdsharifulislamrayhan/Test/genomic-middleware/build/CMakeFiles/rebuild_cache.dir
-/Users/mdsharifulislamrayhan/Test/genomic-middleware/build/cpp/CMakeFiles/genomic_proto.dir
-/Users/mdsharifulislamrayhan/Test/genomic-middleware/build/cpp/CMakeFiles/genomic_middleware.dir
-/Users/mdsharifulislamrayhan/Test/genomic-middleware/build/cpp/CMakeFiles/edit_cache.dir
-/Users/mdsharifulislamrayhan/Test/genomic-middleware/build/cpp/CMakeFiles/rebuild_cache.dir

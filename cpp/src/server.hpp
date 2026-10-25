@@ -5,6 +5,7 @@
 namespace genomic {
 
 // Run gRPC server (blocks). Returns exit code.
-int run_grpc_server(const std::string& bind_address);
+// mpi_thread_multiple is reported through GetStats.
+int run_grpc_server(const std::string& bind_address, bool mpi_thread_multiple);
 
 }  // namespace genomic

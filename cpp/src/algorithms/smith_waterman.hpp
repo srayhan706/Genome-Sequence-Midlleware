@@ -5,8 +5,9 @@
 
 namespace genomic {
 
-// Smith-Waterman local alignment. OpenMP used for parallel band computation
-// if sequence length warrants it.
+// Smith-Waterman local alignment (linear gap penalty). For large inputs the
+// DP matrix is filled as a tiled anti-diagonal wavefront with OpenMP.
+// Memory is O(len(a) * len(b)).
 std::pair<std::string, std::string> smith_waterman(
     const std::string& a,
     const std::string& b,

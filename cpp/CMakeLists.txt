@@ -3,7 +3,21 @@ cmake_minimum_required(VERSION 3.16)
 set(CMAKE_CXX_STANDARD 17)
 
 find_package(MPI REQUIRED COMPONENTS CXX)
+
+# Apple Clang has no bundled OpenMP runtime; point FindOpenMP at Homebrew's libomp.
+if(APPLE AND NOT OpenMP_ROOT)
+  execute_process(COMMAND brew --prefix libomp
+    OUTPUT_VARIABLE _libomp_prefix OUTPUT_STRIP_TRAILING_WHITESPACE ERROR_QUIET)
+  if(_libomp_prefix AND EXISTS "${_libomp_prefix}")
+    set(OpenMP_ROOT "${_libomp_prefix}")
+  endif()
+endif()
 find_package(OpenMP)
+if(OpenMP_CXX_FOUND)
+  message(STATUS "OpenMP enabled (${OpenMP_CXX_FLAGS})")
+else()
+  message(WARNING "OpenMP not found: algorithms will run single-threaded. On macOS: brew install libomp")
+endif()
 find_package(Protobuf REQUIRED)
 find_program(GRPC_CPP_PLUGIN grpc_cpp_plugin
   HINTS $ENV{HOME}/.local/bin /usr/local/bin /opt/homebrew/bin)
@@ -45,29 +59,26 @@ target_link_directories(genomic_proto PUBLIC ${GRPC_LIBRARY_DIRS})
 target_link_libraries(genomic_proto PUBLIC ${GRPC_LIBRARIES})
 target_compile_options(genomic_proto PUBLIC ${GRPC_CFLAGS_OTHER})
 
+# Algorithms + MPI wire format: no MPI/gRPC dependency, so tests can link it alone.
+add_library(genomic_core STATIC
+  src/mpi_protocol.cpp
+  src/algorithms/smith_waterman.cpp
+  src/algorithms/kmp.cpp
+  src/algorithms/kmer.cpp
+)
+target_include_directories(genomic_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
+if(OpenMP_CXX_FOUND)
+  target_link_libraries(genomic_core PUBLIC OpenMP::OpenMP_CXX)
+endif()
+
 add_executable(genomic_middleware
   src/main.cpp
   src/server.cpp
   src/worker.cpp
   src/dispatch.cpp
-  src/dispatch.hpp
-  src/mpi_protocol.cpp
-  src/mpi_protocol.hpp
-  src/algorithms/smith_waterman.cpp
-  src/algorithms/smith_waterman.hpp
-  src/algorithms/kmp.cpp
-  src/algorithms/kmp.hpp
-  src/algorithms/kmer.cpp
-  src/algorithms/kmer.hpp
 )
+target_link_libraries(genomic_middleware PRIVATE genomic_core genomic_proto MPI::MPI_CXX)
 
-target_include_directories(genomic_middleware PRIVATE
-  ${CMAKE_CURRENT_SOURCE_DIR}/src
-  ${GEN_PATH}
-  ${Protobuf_INCLUDE_DIRS}
-)
-target_link_libraries(genomic_middleware PRIVATE genomic_proto MPI::MPI_CXX)
-if(OpenMP_CXX_FOUND)
-  target_link_libraries(genomic_middleware PRIVATE OpenMP::OpenMP_CXX)
-  target_compile_definitions(genomic_middleware PRIVATE _OPENMP)
-endif()
+add_executable(algorithms_test tests/algorithms_test.cpp)
+target_link_libraries(algorithms_test PRIVATE genomic_core)
+add_test(NAME algorithms_test COMMAND algorithms_test)

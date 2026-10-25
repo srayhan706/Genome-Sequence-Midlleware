@@ -1,8 +1,0 @@
-{
-	"InstallScripts" : 
-	[
-		"/Users/mdsharifulislamrayhan/Test/genomic-middleware/build/cmake_install.cmake",
-		"/Users/mdsharifulislamrayhan/Test/genomic-middleware/build/cpp/cmake_install.cmake"
-	],
-	"Parallel" : false
-}

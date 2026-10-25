@@ -8,7 +8,6 @@ import os
 import argparse
 import time
 import random
-import string
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import grpc
@@ -49,7 +48,7 @@ def main():
         total_kmers += n
         if r.cache_hit:
             cache_hits += 1
-        print(f"  Chunk {i+1}: {n} k-mers, {len(r.counts)} unique, cache_hit={r.cache_hit}, {dt*1000:.1f} ms")
+        print(f"  Chunk {i+1}: {n} k-mers, {len(r.counts)} unique, cache_hit={r.cache_hit}, rank {r.info.worker_rank}, {dt*1000:.1f} ms")
         time.sleep(args.delay)
 
     print(f"Total k-mers: {total_kmers}, cache hits: {cache_hits}/{args.chunks}")
